@@ -16,8 +16,8 @@ namespace StdioThrouputTest
         const string NAMEDPIPE_TEST = "named";
         const string TCPSOCKET_TEST = "tcp";
         const int NUM_OF_CHAIN = 5;
-        //const long DATA_SIZE = 1L << 33; // 8,589,934,592 bytes
-        const long DATA_SIZE = 1L << 30; // 1,073,741,824 bytes
+        const long DATA_SIZE = 1L << 33; // 8,589,934,592 bytes
+        //const long DATA_SIZE = 1L << 30; // 1,073,741,824 bytes
         const int BLOCK_SIZE = 1 << 12; // 4,096 bytes
         const int BUFFER_SIZE = BLOCK_SIZE * 10;
 
@@ -31,11 +31,11 @@ namespace StdioThrouputTest
                 void echo(object str) => Console.WriteLine(str);
 
                 echo($"Test target   : {STDIO_TEST}");
-                echo($"No. of chane  : {NUM_OF_CHAIN}");
+                echo($"No. of chain  : {NUM_OF_CHAIN}");
                 echo($"Data size     : {DATA_SIZE.ToString("#,0")}");
                 echo($"Block size    : {BLOCK_SIZE.ToString("#,0")}");
                 echo($"Buffer size   : {BUFFER_SIZE.ToString("#,0")}");
-                echo("");
+                //echo("");
 
                 var data = GenerateTestData();
                 var sw = new Stopwatch();
@@ -44,14 +44,14 @@ namespace StdioThrouputTest
                 var writeSum = 0L;
                 var readSum = 0L;
 
-                echo("Starting child process...");
+                //echo("Starting child process...");
                 var child = StartStdioChild(NUM_OF_CHAIN);
                 SetChildStdIO(child, ref io);
 
-                echo("Waiting child initialize...");
+                //echo("Waiting child initialize...");
                 Thread.Sleep(TimeSpan.FromSeconds(3));
 
-                echo("Start process!");
+                //echo("Start process!");
                 using (io)
                 using (child)
                 {
@@ -73,10 +73,10 @@ namespace StdioThrouputTest
                     sw.Stop();
                 }
 
-                echo("");
+                //echo("");
                 echo($"Time             : {sw.Elapsed}");
                 echo($"Total Throughput : {((int)(DATA_SIZE / sw.Elapsed.TotalSeconds)).ToString("#,0")} bytes/s");
-                echo("Press any key...");
+                //echo("Press any key...");
                 Console.ReadKey();
             }
             else if (args[0] == STDIO_TEST)
