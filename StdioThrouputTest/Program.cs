@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StdioThrouputTest
@@ -14,7 +15,7 @@ namespace StdioThrouputTest
         const string STDIO_TEST = "stdio";
         const string NAMEDPIPE_TEST = "named";
         const string TCPSOCKET_TEST = "tcp";
-        const int NUM_OF_CHANE = 1;
+        const int NUM_OF_CHAIN = 5;
         //const long DATA_SIZE = 1L << 33; // 8,589,934,592 bytes
         const long DATA_SIZE = 1L << 30; // 1,073,741,824 bytes
         const int BLOCK_SIZE = 1 << 12; // 4,096 bytes
@@ -27,16 +28,32 @@ namespace StdioThrouputTest
 
             if (args.Length == 0)
             {
+                void echo(object str) => Console.WriteLine(str);
+
+                echo($"Test target   : {STDIO_TEST}");
+                echo($"No. of chane  : {NUM_OF_CHAIN}");
+                echo($"Data size     : {DATA_SIZE.ToString("#,0")}");
+                echo($"Block size    : {BLOCK_SIZE.ToString("#,0")}");
+                echo($"Buffer size   : {BUFFER_SIZE.ToString("#,0")}");
+                echo("");
+
                 var data = GenerateTestData();
                 var sw = new Stopwatch();
 
                 var io = new StreamIO();
                 var writeSum = 0L;
                 var readSum = 0L;
-                var child = StartStdioChild(NUM_OF_CHANE);
+
+                echo("Starting child process...");
+                var child = StartStdioChild(NUM_OF_CHAIN);
                 SetChildStdIO(child, ref io);
-                using (child)
+
+                echo("Waiting child initialize...");
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+
+                echo("Start process!");
                 using (io)
+                using (child)
                 {
                     Task.Run(() =>
                     {
@@ -56,8 +73,10 @@ namespace StdioThrouputTest
                     sw.Stop();
                 }
 
-                Console.WriteLine(sw.Elapsed);
-                Console.WriteLine("Press any key...");
+                echo("");
+                echo($"Time             : {sw.Elapsed}");
+                echo($"Total Throughput : {((int)(DATA_SIZE / sw.Elapsed.TotalSeconds)).ToString("#,0")} bytes/s");
+                echo("Press any key...");
                 Console.ReadKey();
             }
             else if (args[0] == STDIO_TEST)
@@ -85,8 +104,8 @@ namespace StdioThrouputTest
                 var child = StartStdioChild(count);
                 SetChildStdIO(child, ref io);
                 SetStdIO(ref io);
-                using (child)
                 using (io)
+                using (child)
                     DoChildIO(io);
             }
         }
@@ -121,20 +140,20 @@ namespace StdioThrouputTest
         {
             Task.Run(() =>
             {
-                var readBlock = new byte[BLOCK_SIZE];
-                var readLen = 0;
-                while ((readLen = io.Input.Read(readBlock, 0, BLOCK_SIZE)) != 0)
+                var writeBlock = new byte[BLOCK_SIZE];
+                var writeLen = 0;
+                while ((writeLen = io.ChildOutput.Read(writeBlock, 0, BLOCK_SIZE)) != 0)
                 {
-                    io.ChildInput.Write(readBlock, 0, readLen);
-                    io.ChildInput.Flush();
+                    io.Output.Write(writeBlock, 0, writeLen);
+                    io.Output.Flush();
                 }
             });
-            var writeBlock = new byte[BLOCK_SIZE];
-            var writeLen = 0;
-            while ((writeLen = io.ChildOutput.Read(writeBlock, 0, BLOCK_SIZE)) != 0)
+            var readBlock = new byte[BLOCK_SIZE];
+            var readLen = 0;
+            while ((readLen = io.Input.Read(readBlock, 0, BLOCK_SIZE)) != 0)
             {
-                io.Output.Write(writeBlock, 0, writeLen);
-                io.Output.Flush();
+                io.ChildInput.Write(readBlock, 0, readLen);
+                io.ChildInput.Flush();
             }
         }
 
