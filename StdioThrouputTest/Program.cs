@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace StdioThrouputTest
 {
@@ -34,10 +35,23 @@ namespace StdioThrouputTest
                     BUFFER_SIZE = BLOCK_SIZE * 10;
                     new StdioTest().RunRoot();
                     Console.WriteLine();
+                    Thread.Sleep(5000);
+                }
+                for (var i = 0; i < 5; i++)
+                {
+                    BLOCK_SIZE = 1 << (12 + (i * 2));
+                    BUFFER_SIZE = BLOCK_SIZE * 10;
                     new NamedPipeTest().RunRoot();
                     Console.WriteLine();
+                    Thread.Sleep(5000);
+                }
+                for (var i = 0; i < 5; i++)
+                {
+                    BLOCK_SIZE = 1 << (12 + (i * 2));
+                    BUFFER_SIZE = BLOCK_SIZE * 10;
                     new AnonymousPipeTest(null, null).RunRoot();
                     Console.WriteLine();
+                    Thread.Sleep(5000);
                 }
                 Console.ReadKey();
             }
