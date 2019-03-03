@@ -125,7 +125,7 @@ namespace StdioThrouputTest
             if (count < 0)
                 return null;
             var info = new ProcessStartInfo(exePath);
-            info.Arguments = $"{TestType} {count}";
+            info.Arguments = $"{TestType} {count} {Program.BLOCK_SIZE}";
             info.CreateNoWindow = true;
             info.UseShellExecute = false;
             info.RedirectStandardInput = true;
