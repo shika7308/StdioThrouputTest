@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,28 +26,30 @@ namespace StdioThrouputTest
 
             if (args.Length == 0)
             {
-                for (var i = 0; i < 5; i++)
-                {
-                    BLOCK_SIZE = 1 << (12 + (i * 2));
+                Console.WriteLine("Preparing write buffer...\n");
+                var wData = GenerateTestData();
 
-                    new StdioTest().RunRoot();
-                    Console.WriteLine();
-                    Thread.Sleep(5000);
-                }
-                for (var i = 0; i < 5; i++)
+                var bitShift = new[] { 10, 12, 14, 16, 18 };
+
+                foreach (var shift in bitShift)
                 {
-                    BLOCK_SIZE = 1 << (12 + (i * 2));
-                    new NamedPipeTest().RunRoot();
+                    BLOCK_SIZE = 1 << shift;
+                    new StdioTest().RunRoot(wData);
                     Console.WriteLine();
-                    Thread.Sleep(5000);
-                }
-                for (var i = 0; i < 5; i++)
-                {
-                    BLOCK_SIZE = 1 << (12 + (i * 2));
-                    new AnonymousPipeTest(null, null).RunRoot();
+                    Thread.Sleep(1000);
+
+                    BLOCK_SIZE = 1 << shift;
+                    new NamedPipeTest().RunRoot(wData);
                     Console.WriteLine();
-                    Thread.Sleep(5000);
+                    Thread.Sleep(1000);
+
+                    BLOCK_SIZE = 1 << shift;
+                    new AnonymousPipeTest(null, null).RunRoot(wData);
+                    Console.WriteLine();
+                    Thread.Sleep(1000);
                 }
+
+                Console.WriteLine("Press any key to exit.");
                 Console.ReadKey();
             }
             else
@@ -62,6 +64,13 @@ namespace StdioThrouputTest
                 }
                 test.RunChild(int.Parse(args[1]));
             }
+        }
+
+        static byte[] GenerateTestData()
+        {
+            var ret = new byte[DATA_SIZE];
+            new Random().NextBytes(ret);
+            return ret;
         }
     }
 }
