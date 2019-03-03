@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -110,7 +110,7 @@ namespace StdioThrouputTest
                 SetIO();
                 WaitForParent();
                 BeforeChildStart();
-                var child = CreateChild(count);
+                var child = CreateChild(count - 1);
                 child.Start();
                 SetChildIO(child);
                 WaitForChild();
