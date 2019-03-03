@@ -11,7 +11,7 @@
 |Thread(s) per core|2|
 |CPU Frequency|2600 MHz|
 |L1d, L1i cache|2 x 32 KB|
-|L2 cache|256 KB|
+|L2 cache|2 x 256 KB|
 |L3 cache|4 MB|
 
 ## Results
