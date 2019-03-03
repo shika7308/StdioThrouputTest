@@ -31,7 +31,7 @@ namespace StdioThrouputTest
         {
             var pipeName = $"Named-Pipe-Test-{io.Count}";
             childInputPipe = new NamedPipeClientStream(".", $"{pipeName}-parent-child", PipeDirection.Out, PipeOptions.None, System.Security.Principal.TokenImpersonationLevel.Impersonation);
-            childOutputPipe = new NamedPipeServerStream($"{pipeName}-child-parent", PipeDirection.In, 1);
+            childOutputPipe = new NamedPipeServerStream($"{pipeName}-child-parent", PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.None, Program.BUFFER_SIZE, Program.BUFFER_SIZE);
             io.ChildInput = childInputPipe;
             io.ChildOutput = childOutputPipe;
         }
@@ -39,7 +39,7 @@ namespace StdioThrouputTest
         protected override void SetIO()
         {
             var pipeName = $"Named-Pipe-Test-{io.Count + 1}";
-            parentOutputPipe = new NamedPipeServerStream($"{pipeName}-parent-child", PipeDirection.In, 1);
+            parentOutputPipe = new NamedPipeServerStream($"{pipeName}-parent-child", PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.None, Program.BUFFER_SIZE, Program.BUFFER_SIZE);
             parentInputPipe = new NamedPipeClientStream(".", $"{pipeName}-child-parent", PipeDirection.Out, PipeOptions.None, System.Security.Principal.TokenImpersonationLevel.Impersonation);
             io.Input = new BufferedStream(parentOutputPipe, Program.BUFFER_SIZE);
             io.Output = new BufferedStream(parentInputPipe, Program.BUFFER_SIZE);

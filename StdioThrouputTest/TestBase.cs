@@ -32,30 +32,20 @@ namespace StdioThrouputTest
         static string exePath = Assembly.GetExecutingAssembly().Location;
 
         static void echo(object str) => Console.WriteLine(str);
-
-        static byte[] GenerateTestData()
-        {
-            var ret = new byte[Program.BLOCK_SIZE];
-            new Random().NextBytes(ret);
-            return ret;
-        }
-
+        
         protected readonly StreamIO io = new StreamIO();
 
-        public void RunRoot()
+        public void RunRoot(byte[] wData)
         {
-            echo($"Test target   : {TestType}");
-            echo($"No. of chain  : {Program.NUM_OF_CHAIN}");
-            echo($"Data size     : {Program.DATA_SIZE.ToString("#,0")}");
-            echo($"Block size    : {Program.BLOCK_SIZE.ToString("#,0")}");
-            echo($"Buffer size   : {Program.BUFFER_SIZE.ToString("#,0")}");
+            echo($"Test target      : {TestType}");
+            echo($"No. of chain     : {Program.NUM_OF_CHAIN}");
+            echo($"Data size        : {Program.DATA_SIZE.ToString("#,0")}");
+            echo($"Block size       : {Program.BLOCK_SIZE.ToString("#,0")}");
+            echo($"Buffer size      : {Program.BUFFER_SIZE.ToString("#,0")}");
 
-            var data = GenerateTestData();
-            var sw = new Stopwatch();
-
-            var writeSum = 0L;
-            var readSum = 0L;
-
+            //echo("Preparing read buffer...");
+            var rData = new byte[wData.Length];
+            
             //echo("Starting child process...");
             BeforeChildStart();
             var child = CreateChild(Program.NUM_OF_CHAIN - 1);
@@ -66,33 +56,51 @@ namespace StdioThrouputTest
             WaitForChild();
 
             //echo("Start process!");
+            var time = 0.0;
             using (io)
             using (child)
             {
+                var t1 = Stopwatch.GetTimestamp(); 
+
                 var writeTask = Task.Run(() =>
                 {
-                    sw.Start();
-                    while (writeSum < Program.DATA_SIZE)
+                    var blockNum = (Program.DATA_SIZE - 1) / Program.BLOCK_SIZE + 1;
+                    for (var bi = 0; bi < blockNum; ++bi)
                     {
-                        io.ChildInput.Write(data, 0, Program.BLOCK_SIZE);
-                        writeSum += Program.BLOCK_SIZE;
-                    }
+                        var offset = Program.BLOCK_SIZE * bi;
+                        var count = Math.Min(Program.BLOCK_SIZE, Program.DATA_SIZE - offset);
+                        io.ChildInput.Write(wData, offset, count);
+                        io.ChildInput.Flush();
+                    } 
                 });
-                var block = new byte[Program.BLOCK_SIZE];
+
+                var readSum = 0;
                 while (readSum < Program.DATA_SIZE)
                 {
-                    var len = io.ChildOutput.Read(block, 0, Program.BLOCK_SIZE);
-                    readSum += len;
+                    var offset = readSum; 
+                    var count = Math.Min(Program.BLOCK_SIZE, Program.DATA_SIZE - offset); 
+                    readSum += io.ChildOutput.Read(rData, offset, count);
                 }
-                sw.Stop();
+
+                var t2 = Stopwatch.GetTimestamp(); 
+                time = (double)(t2 - t1) / Stopwatch.Frequency;
+
                 if (writeTask.IsFaulted)
                     throw writeTask.Exception;
             }
 
+            var missNum = 0;
+            for (var i = 0; i < wData.Length; ++i)
+            {
+                if (wData[i] != rData[i])
+                    missNum++;
+            }
+
             //echo("");
-            echo($"Time             : {sw.Elapsed}");
-            echo($"Throughput       : {((long)(Program.DATA_SIZE / sw.Elapsed.TotalSeconds * Program.NUM_OF_CHAIN * 2)).ToString("#,0")} bytes/s");
-            echo($"Total Throughput : {((long)(Program.DATA_SIZE / sw.Elapsed.TotalSeconds)).ToString("#,0")} bytes/s");
+            echo($"Time             : {time}");
+            echo($"Throughput       : {((long)(Program.DATA_SIZE / time * Program.NUM_OF_CHAIN * 2)).ToString("#,0")} bytes/s");
+            echo($"Total Throughput : {((long)(Program.DATA_SIZE / time)).ToString("#,0")} bytes/s");
+            echo($"Miss rate        : {(float)missNum * 100 / Program.DATA_SIZE:F2} %");
         }
 
         public void RunChild(int count)
@@ -110,7 +118,7 @@ namespace StdioThrouputTest
                 SetIO();
                 WaitForParent();
                 BeforeChildStart();
-                var child = CreateChild(count);
+                var child = CreateChild(count - 1);
                 child.Start();
                 SetChildIO(child);
                 WaitForChild();
@@ -125,7 +133,7 @@ namespace StdioThrouputTest
             if (count < 0)
                 return null;
             var info = new ProcessStartInfo(exePath);
-            info.Arguments = $"{TestType} {count}";
+            info.Arguments = $"{TestType} {count} {Program.BLOCK_SIZE}";
             info.CreateNoWindow = true;
             info.UseShellExecute = false;
             info.RedirectStandardInput = true;
