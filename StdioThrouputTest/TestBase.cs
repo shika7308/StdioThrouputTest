@@ -100,7 +100,7 @@ namespace StdioThrouputTest
             echo($"Time             : {time}");
             echo($"Throughput       : {((long)(Program.DATA_SIZE / time * Program.NUM_OF_CHAIN * 2)).ToString("#,0")} bytes/s");
             echo($"Total Throughput : {((long)(Program.DATA_SIZE / time)).ToString("#,0")} bytes/s");
-            echo($"Miss rate        : {(float)missNum * 100 / Program.DATA_SIZE:F2} %");
+            echo($"Miss rate        : {(float)missNum * 100 / Program.DATA_SIZE} %");
         }
 
         public void RunChild(int count)
