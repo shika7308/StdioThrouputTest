@@ -29,24 +29,23 @@ namespace StdioThrouputTest
                 Console.WriteLine("Preparing write buffer...\n");
                 var wData = GenerateTestData();
 
-                var bitShift = new[] { 10, 12, 14, 16, 18 };
+                var bitShift = new[] { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 };
 
                 foreach (var shift in bitShift)
                 {
                     BLOCK_SIZE = 1 << shift;
+
                     new StdioTest().RunRoot(wData);
                     Console.WriteLine();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
 
-                    BLOCK_SIZE = 1 << shift;
                     new NamedPipeTest().RunRoot(wData);
                     Console.WriteLine();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
 
-                    BLOCK_SIZE = 1 << shift;
                     new AnonymousPipeTest(null, null).RunRoot(wData);
                     Console.WriteLine();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 }
 
                 Console.WriteLine("Press any key to exit.");
