@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -27,7 +27,7 @@ namespace StdioThrouputTest
         }
     }
 
-    abstract class TestBase
+    abstract class TestBase : IDisposable
     {
         static string exePath = Assembly.GetExecutingAssembly().Location;
 
@@ -184,6 +184,11 @@ namespace StdioThrouputTest
                 io.Output.Write(block, 0, len);
                 io.Output.Flush();
             }
+        }
+        
+        public virtual void Dispose()
+        {
+            io?.Dispose();
         }
     }
 }
