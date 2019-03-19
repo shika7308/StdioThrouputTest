@@ -65,5 +65,23 @@
 
 ![results](documents/result_3.jpg)
 
+### No. 4
+
+|Key|Value|
+|--|--|
+|Architecture|x86 64|
+|CPU mode|64-bit|
+|Byte Order|Little Endian|
+|No. of CPUs|6|
+|Thread(s) per core|2|
+|CPU Frequency|3600 MHz|
+|L1d, L1i cache|6 x 32 KB|
+|L2 cache|6 x 256 KB|
+|L3 cache|15 MB|
+|RAM|64GB|
+|RAM Frequency|2400 MHz|
+
+![results](documents/result_4.jpg)
+
 ## Refferences
 [Evaluation of Inter-Process Communication Mechanisms](http://pages.cs.wisc.edu/~adityav/Evaluation_of_Inter_Process_Communication_Mechanisms.pdf)
